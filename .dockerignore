@@ -1,0 +1,9 @@
+.git
+.gitignore
+.idea
+
+web/node_modules
+web/dist
+
+backend/.cache
+deploy/env/.env

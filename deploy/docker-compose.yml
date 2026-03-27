@@ -1,0 +1,62 @@
+services:
+  postgres:
+    container_name: owl-alpha-db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME:-owlalpha}
+      POSTGRES_USER: ${DB_USER:-owlalpha}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-owlalpha}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../backend/manifest/sql:/docker-entrypoint-initdb.d:ro
+
+  redis:
+    container_name: owl-alpha-redis
+    image: redis:7
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    container_name: owl-alpha-api
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      GF_GCFG_FILE: config.yaml
+      SERVER_ADDRESS: :8000
+      SERVER_JWTSECRET: ${JWT_SECRET:-change-me-in-production}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DB_USER:-owlalpha}
+      DATABASE_PASSWORD: ${DB_PASSWORD:-owlalpha}
+      DATABASE_NAME: ${DB_NAME:-owlalpha}
+      DATABASE_SSLMODE: disable
+      REDIS_ADDRESS: redis:6379
+      REDIS_PASSWORD: ""
+      REDIS_DB: 0
+      OPENAI_BASEURL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_APIKEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./env/.env
+
+  nginx:
+    container_name: owl-alpha-nginx
+    build:
+      context: ..
+      dockerfile: deploy/docker/nginx/Dockerfile
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:

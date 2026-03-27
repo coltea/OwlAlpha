@@ -1,0 +1,21 @@
+server:
+  address: ":8001"
+  jwtSecret: "change-me-in-production"
+
+database:
+  host: "127.0.0.1"
+  port: 5432
+  user: "owlalpha"
+  password: "owlalpha"
+  name: "owlalpha"
+  sslMode: "disable"
+
+redis:
+  address: "127.0.0.1:6379"
+  password: ""
+  db: 0
+
+openai:
+  baseUrl: "https://api.openai.com/v1"
+  apiKey: ""
+  model: "gpt-4o-mini"
